@@ -18,7 +18,6 @@ import {
 } from "../commands/reportCommand.js";
 import { handleListCommand } from "../commands/listCommand.js";
 import { handleCategoriesCommand } from "../commands/categoriesCommand.js";
-import { MessageMedia } from "whatsapp-web.js";
 
 /**
  * Handler principal de mensagens
