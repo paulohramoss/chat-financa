@@ -206,18 +206,21 @@ export async function getCategorySummary(userId, options = {}) {
 
     transactions.forEach((t) => {
       const category = t.category || "outros";
-      if (!summary[category]) {
-        summary[category] = {
+      const type = t.type || "expense";
+      const key = `${type}:${category}`;
+
+      if (!summary[key]) {
+        summary[key] = {
           category,
-          type: t.type,
+          type,
           total: 0,
           count: 0,
           transactions: [],
         };
       }
-      summary[category].total += t.amount;
-      summary[category].count += 1;
-      summary[category].transactions.push(t);
+      summary[key].total += t.amount;
+      summary[key].count += 1;
+      summary[key].transactions.push(t);
     });
 
     return Object.values(summary).sort((a, b) => b.total - a.total);

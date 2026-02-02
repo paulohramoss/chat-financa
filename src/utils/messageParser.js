@@ -131,22 +131,43 @@ const categoryKeywords = {
 };
 
 /**
+ * Normalizar string de valor monetário
+ */
+function normalizeAmount(value) {
+  const trimmed = value.replace(/\s/g, "");
+  const lastComma = trimmed.lastIndexOf(",");
+  const lastDot = trimmed.lastIndexOf(".");
+
+  if (lastComma !== -1 && lastDot !== -1) {
+    if (lastComma > lastDot) {
+      return trimmed.replace(/\./g, "").replace(",", ".");
+    }
+    return trimmed.replace(/,/g, "");
+  }
+
+  if (lastComma !== -1) {
+    return trimmed.replace(/\./g, "").replace(",", ".");
+  }
+
+  return trimmed.replace(/,/g, "");
+}
+
+/**
  * Extrair valor monetário da mensagem
  */
 function extractAmount(message) {
-  // Padrões para valores monetários
   const patterns = [
-    /R\$?\s*(\d+(?:[.,]\d{1,2})?)/i, // R$ 50.00 ou R$ 50,00
-    /(\d+(?:[.,]\d{1,2})?)\s*reais?/i, // 50 reais
-    /(\d+(?:[.,]\d{1,2})?)\s*r\$/i, // 50 R$
-    /(\d+(?:[.,]\d{1,2})?)/, // 50
+    /R\$?\s*(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?)/i,
+    /(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?)\s*reais?/i,
+    /(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?)\s*r\$/i,
+    /(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?)/,
   ];
 
   for (const pattern of patterns) {
     const match = message.match(pattern);
     if (match) {
-      // Converter vírgula para ponto e parsear
-      const value = parseFloat(match[1].replace(",", "."));
+      const normalized = normalizeAmount(match[1]);
+      const value = parseFloat(normalized);
       if (!isNaN(value) && value > 0) {
         return value;
       }
