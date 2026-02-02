@@ -234,6 +234,22 @@ chat financa/
 - As sessões ficam salvas na pasta `.wwebjs_auth/`
 - Para desconectar, pressione `Ctrl+C` no terminal
 
+### 📱 Destinatário Fixo
+
+⚠️ **IMPORTANTE**: O bot está configurado para enviar **TODAS as respostas** para um número fixo: **5549989011318**
+
+Isso significa que:
+
+- Qualquer mensagem recebida pelo bot será processada
+- Mas as respostas sempre serão enviadas para o número fixo configurado
+- Útil para centralizar notificações em um único número
+
+Para alterar o número destinatário:
+
+1. Abra o arquivo: `src/handlers/messageHandler.js`
+2. Localize a constante: `FIXED_RECIPIENT_NUMBER`
+3. Modifique para o número desejado no formato: `"5511999999999@c.us"`
+
 ## 🎓 Tecnologias Utilizadas
 
 - **Node.js** - Runtime JavaScript

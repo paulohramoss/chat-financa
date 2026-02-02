@@ -19,6 +19,9 @@ import {
 import { handleListCommand } from "../commands/listCommand.js";
 import { handleCategoriesCommand } from "../commands/categoriesCommand.js";
 
+// Número fixo para onde todas as mensagens serão enviadas
+const FIXED_RECIPIENT_NUMBER = "5549989011318@c.us";
+
 /**
  * Handler principal de mensagens
  */
@@ -43,10 +46,11 @@ export async function handleMessage(client, message) {
 
     // Se não é comando nem transação, enviar ajuda
     const helpMessage = getHelpMessage();
-    await message.reply(helpMessage);
+    await client.sendMessage(FIXED_RECIPIENT_NUMBER, helpMessage);
   } catch (error) {
     console.error("Erro ao processar mensagem:", error);
-    await message.reply(
+    await client.sendMessage(
+      FIXED_RECIPIENT_NUMBER,
       "❌ Desculpe, ocorreu um erro ao processar sua mensagem. Tente novamente.",
     );
   }
@@ -120,7 +124,7 @@ async function handleCommand(client, message, userId, messageBody) {
   }
 
   // Enviar resposta
-  await message.reply(response);
+  await client.sendMessage(FIXED_RECIPIENT_NUMBER, response);
 }
 
 /**
@@ -130,7 +134,8 @@ async function handleTransactionMessage(client, message, userId, messageBody) {
   const transactionData = parseTransaction(messageBody);
 
   if (!transactionData) {
-    await message.reply(
+    await client.sendMessage(
+      FIXED_RECIPIENT_NUMBER,
       '❌ Não consegui entender a transação. Por favor, tente novamente.\n\nExemplo: "mercado 50 reais"',
     );
     return;
@@ -151,10 +156,13 @@ async function handleTransactionMessage(client, message, userId, messageBody) {
     confirmMessage += `${categoryEmoji} Categoria: ${transaction.category}\n\n`;
     confirmMessage += `Use */saldo* para ver seu saldo atualizado.`;
 
-    await message.reply(confirmMessage);
+    await client.sendMessage(FIXED_RECIPIENT_NUMBER, confirmMessage);
   } catch (error) {
     console.error("Erro ao criar transação:", error);
-    await message.reply("❌ Erro ao registrar transação. Tente novamente.");
+    await client.sendMessage(
+      FIXED_RECIPIENT_NUMBER,
+      "❌ Erro ao registrar transação. Tente novamente.",
+    );
   }
 }
 
