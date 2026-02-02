@@ -5,6 +5,16 @@ import { handleMessage, handleNewChat } from "./handlers/messageHandler.js";
 
 console.log("🤖 Finance Bot iniciando...\n");
 
+// Variável global para armazenar o número do usuário autenticado
+let authenticatedUserNumber = null;
+
+/**
+ * Função para obter o número do usuário autenticado
+ */
+export function getAuthenticatedUserNumber() {
+  return authenticatedUserNumber;
+}
+
 /**
  * Inicializar cliente WhatsApp
  */
@@ -38,8 +48,13 @@ client.on("qr", (qr) => {
 /**
  * Evento: Cliente pronto
  */
-client.on("ready", () => {
+client.on("ready", async () => {
+  // Obter o número do usuário autenticado
+  const info = await client.info;
+  authenticatedUserNumber = info.wid._serialized;
+
   console.log("✅ Finance Bot conectado e pronto para uso!");
+  console.log(`📱 Seu número: ${authenticatedUserNumber}`);
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
   console.log("💬 Aguardando mensagens...\n");
 });
@@ -71,10 +86,11 @@ client.on("disconnected", (reason) => {
  * Evento: Nova mensagem recebida
  */
 client.on("message", async (message) => {
-  // Ignorar mensagens de grupos e status
+  // Ignorar mensagens de grupos, status e newsletters
   if (
     message.from.includes("@g.us") ||
-    message.from.includes("status@broadcast")
+    message.from.includes("status@broadcast") ||
+    message.from.includes("@newsletter")
   ) {
     return;
   }

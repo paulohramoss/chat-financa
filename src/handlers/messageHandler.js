@@ -19,8 +19,13 @@ import {
 import { handleListCommand } from "../commands/listCommand.js";
 import { handleCategoriesCommand } from "../commands/categoriesCommand.js";
 
-// Número fixo para onde todas as mensagens serão enviadas
-const FIXED_RECIPIENT_NUMBER = "5549989011318@c.us";
+/**
+ * Função auxiliar para obter o número do destinatário (o próprio usuário autenticado)
+ */
+async function getRecipientNumber(client) {
+  const info = await client.info;
+  return info.wid._serialized;
+}
 
 /**
  * Handler principal de mensagens
@@ -29,28 +34,43 @@ export async function handleMessage(client, message) {
   try {
     const userId = message.from;
     const messageBody = message.body.trim();
+    const recipientNumber = await getRecipientNumber(client);
 
     console.log(`[${userId}] Mensagem recebida: ${messageBody}`);
+    console.log(`[📤] Resposta será enviada para: ${recipientNumber}`);
 
     // Verificar se é um comando
     if (messageBody.startsWith("/")) {
-      await handleCommand(client, message, userId, messageBody);
+      await handleCommand(
+        client,
+        message,
+        userId,
+        messageBody,
+        recipientNumber,
+      );
       return;
     }
 
     // Tentar parsear como transação
     if (isTransactionMessage(messageBody)) {
-      await handleTransactionMessage(client, message, userId, messageBody);
+      await handleTransactionMessage(
+        client,
+        message,
+        userId,
+        messageBody,
+        recipientNumber,
+      );
       return;
     }
 
     // Se não é comando nem transação, enviar ajuda
     const helpMessage = getHelpMessage();
-    await client.sendMessage(FIXED_RECIPIENT_NUMBER, helpMessage);
+    await client.sendMessage(recipientNumber, helpMessage);
   } catch (error) {
     console.error("Erro ao processar mensagem:", error);
+    const recipientNumber = await getRecipientNumber(client);
     await client.sendMessage(
-      FIXED_RECIPIENT_NUMBER,
+      recipientNumber,
       "❌ Desculpe, ocorreu um erro ao processar sua mensagem. Tente novamente.",
     );
   }
@@ -59,7 +79,13 @@ export async function handleMessage(client, message) {
 /**
  * Handler de comandos
  */
-async function handleCommand(client, message, userId, messageBody) {
+async function handleCommand(
+  client,
+  message,
+  userId,
+  messageBody,
+  recipientNumber,
+) {
   const parts = messageBody.slice(1).split(" ");
   const command = parts[0].toLowerCase();
   const args = parts.slice(1);
@@ -124,18 +150,24 @@ async function handleCommand(client, message, userId, messageBody) {
   }
 
   // Enviar resposta
-  await client.sendMessage(FIXED_RECIPIENT_NUMBER, response);
+  await client.sendMessage(recipientNumber, response);
 }
 
 /**
  * Handler de mensagens de transação
  */
-async function handleTransactionMessage(client, message, userId, messageBody) {
+async function handleTransactionMessage(
+  client,
+  message,
+  userId,
+  messageBody,
+  recipientNumber,
+) {
   const transactionData = parseTransaction(messageBody);
 
   if (!transactionData) {
     await client.sendMessage(
-      FIXED_RECIPIENT_NUMBER,
+      recipientNumber,
       '❌ Não consegui entender a transação. Por favor, tente novamente.\n\nExemplo: "mercado 50 reais"',
     );
     return;
@@ -156,11 +188,11 @@ async function handleTransactionMessage(client, message, userId, messageBody) {
     confirmMessage += `${categoryEmoji} Categoria: ${transaction.category}\n\n`;
     confirmMessage += `Use */saldo* para ver seu saldo atualizado.`;
 
-    await client.sendMessage(FIXED_RECIPIENT_NUMBER, confirmMessage);
+    await client.sendMessage(recipientNumber, confirmMessage);
   } catch (error) {
     console.error("Erro ao criar transação:", error);
     await client.sendMessage(
-      FIXED_RECIPIENT_NUMBER,
+      recipientNumber,
       "❌ Erro ao registrar transação. Tente novamente.",
     );
   }
