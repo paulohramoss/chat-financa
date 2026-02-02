@@ -27,7 +27,7 @@ export async function handleMessage(client, message) {
     const userId = message.from;
     const messageBody = message.body.trim();
 
-    console.log(`[${userId}] Mensagem recebida: ${messageBody}`);
+    console.log(`[${userId}] Mensagem enviada: ${messageBody}`);
 
     // Verificar se é um comando
     if (messageBody.startsWith("/")) {
@@ -40,6 +40,11 @@ export async function handleMessage(client, message) {
       await handleTransactionMessage(client, userId, messageBody);
       return;
     }
+
+    // Se não for comando nem transação, ignorar
+    console.log(
+      `[${userId}] ⏭️  Ignorando mensagem (não é comando nem transação)`,
+    );
   } catch (error) {
     console.error("Erro ao processar mensagem:", error);
     await client.sendMessage(
@@ -52,11 +57,7 @@ export async function handleMessage(client, message) {
 /**
  * Handler de comandos
  */
-async function handleCommand(
-  client,
-  userId,
-  messageBody,
-) {
+async function handleCommand(client, userId, messageBody) {
   const parts = messageBody.slice(1).split(" ");
   const command = parts[0].toLowerCase();
   const args = parts.slice(1);
@@ -127,11 +128,7 @@ async function handleCommand(
 /**
  * Handler de mensagens de transação
  */
-async function handleTransactionMessage(
-  client,
-  userId,
-  messageBody,
-) {
+async function handleTransactionMessage(client, userId, messageBody) {
   const transactionData = parseTransaction(messageBody);
 
   if (!transactionData) {

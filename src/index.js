@@ -83,9 +83,9 @@ client.on("disconnected", (reason) => {
 });
 
 /**
- * Evento: Nova mensagem recebida
+ * Evento: Nova mensagem criada (enviada ou recebida)
  */
-client.on("message", async (message) => {
+client.on("message_create", async (message) => {
   // Ignorar mensagens de grupos, status e newsletters
   if (
     message.from.includes("@g.us") ||
@@ -95,9 +95,45 @@ client.on("message", async (message) => {
     return;
   }
 
-  // Ignorar mensagens do próprio bot
-  if (message.fromMe) {
+  // Processar APENAS mensagens enviadas pelo próprio usuário
+  if (!message.fromMe) {
     return;
+  }
+
+  // CRÍTICO: Ignorar mensagens enviadas pelo bot programaticamente
+  // Mensagens do bot contêm emojis específicos ou formatação markdown
+  const messageBody = message.body || "";
+  const botSignatures = [
+    "✅ Transação registrada!",
+    "🤖 BEM-VINDO AO FINANCE BOT",
+    "🤖 *BEM-VINDO AO FINANCE BOT",
+    "👋 *Olá! Bem-vindo ao Finance Bot",
+    "💰 *SEU SALDO*",
+    "📊 *RESUMO",
+    "📊 SALDO TOTAL",
+    "💰 Resumo Financeiro",
+    "❌ Comando não reconhecido",
+    "❌ Erro ao",
+    "❌ Desculpe",
+    "❌ Não consegui entender",
+    "Use */saldo* para ver",
+    "Use */ajuda* para ver",
+    "📝 REGISTRAR TRANSAÇÕES",
+    "💰 CONSULTAS RÁPIDAS",
+    "🏷️ CATEGORIAS",
+    "transações registradas",
+    "Para registrar uma transação",
+    "━━━━━━━━━━━━━━━━", // Separador usado em todas as mensagens do bot
+  ];
+
+  // Se a mensagem contém assinatura do bot, ignorar
+  for (const signature of botSignatures) {
+    if (messageBody.includes(signature)) {
+      console.log(
+        `[BOT] Ignorando mensagem do próprio bot: ${messageBody.substring(0, 50)}...`,
+      );
+      return;
+    }
   }
 
   await handleMessage(client, message);
